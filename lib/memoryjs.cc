@@ -104,7 +104,7 @@ void openProcess(const FunctionCallbackInfo<Value>& args) {
   processInfo->Set(String::NewFromUtf8(isolate, "szExeFile"), String::NewFromUtf8(isolate, pair.process.szExeFile));
   processInfo->Set(String::NewFromUtf8(isolate, "handle"), Number::New(isolate, (int)pair.handle));
 
-  DWORD base = Module.getBaseAddress(pair.process.szExeFile, pair.process.th32ProcessID);
+  DWORD64 base = Module.getBaseAddress(pair.process.szExeFile, pair.process.th32ProcessID);
   processInfo->Set(String::NewFromUtf8(isolate, "modBaseAddr"), Number::New(isolate, (uintptr_t)base));
 
   // openProcess can either take one argument or can take
@@ -352,13 +352,15 @@ void readMemory(const FunctionCallbackInfo<Value>& args) {
   // args[1] -> Uint32Value() is the address to read
   if (!strcmp(dataType, "int")) {
 
-    int result = Memory.readMemory<int>((HANDLE)args[0]->Uint32Value(), args[1]->Uint32Value());
+    //int result = Memory.readMemory<int>((HANDLE)args[0]->Uint32Value(), args[1]->Uint32Value());
+	int result = Memory.readMemory<int>((HANDLE)args[0]->IntegerValue(), args[1]->IntegerValue());
     if (args.Length() == 4) argv[1] = Number::New(isolate, result);
     else args.GetReturnValue().Set(Number::New(isolate, result));
 
   } else if (!strcmp(dataType, "dword")) {
 
-    DWORD result = Memory.readMemory<DWORD>((HANDLE)args[0]->Uint32Value(), args[1]->Uint32Value());
+    //DWORD result = Memory.readMemory<DWORD>((HANDLE)args[0]->Uint32Value(), args[1]->Uint32Value());
+	DWORD result = Memory.readMemory<DWORD>((HANDLE)args[0]->IntegerValue(), args[1]->IntegerValue());
     if (args.Length() == 4) argv[1] = Number::New(isolate, result);
     else args.GetReturnValue().Set(Number::New(isolate, result));
 
@@ -376,7 +378,8 @@ void readMemory(const FunctionCallbackInfo<Value>& args) {
 
   } else if (!strcmp(dataType, "float")) {
 
-    float result = Memory.readMemory<float>((HANDLE)args[0]->Uint32Value(), args[1]->Uint32Value());
+    //float result = Memory.readMemory<float>((HANDLE)args[0]->Uint32Value(), args[1]->Uint32Value());
+	float result = Memory.readMemory<float>((HANDLE)args[0]->IntegerValue(), args[1]->IntegerValue());
     if (args.Length() == 4) argv[1] = Number::New(isolate, result);
     else args.GetReturnValue().Set(Number::New(isolate, result));
 
@@ -388,7 +391,8 @@ void readMemory(const FunctionCallbackInfo<Value>& args) {
 
   } else if (!strcmp(dataType, "ptr") || !strcmp(dataType, "pointer")) {
 
-    intptr_t result = Memory.readMemory<intptr_t>((HANDLE)args[0]->Uint32Value(), args[1]->Uint32Value());
+    //intptr_t result = Memory.readMemory<intptr_t>((HANDLE)args[0]->Uint32Value(), args[1]->Uint32Value());
+	intptr_t result = Memory.readMemory<intptr_t>((HANDLE)args[0]->IntegerValue(), args[1]->IntegerValue());
     if (args.Length() == 4) argv[1] = Number::New(isolate, result);
     else args.GetReturnValue().Set(Number::New(isolate, result));
 
@@ -403,11 +407,12 @@ void readMemory(const FunctionCallbackInfo<Value>& args) {
     std::vector<char> chars;
     int offset = 0x0;
     while (true) {
-      char c = Memory.readChar((HANDLE)args[0]->Uint32Value(), args[1]->IntegerValue() + offset);
+      char c = Memory.readChar((HANDLE)args[0]->IntegerValue(), args[1]->IntegerValue() + offset);
       chars.push_back(c);
 
       // break at 1 million chars
-      if (offset == (sizeof(char) * 1000000)) {
+      if (offset == (sizeof(char) * 100000000000000000)) {
+	  //if (offset == (sizeof(char) * 10000000000000000000)) {
         chars.clear();
         break;
       }
